@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Өмнөговь аймаг - Худалдан авах ажиллагааны газар',
   description: 'Өмнөговь аймгийн Худалдан авах ажиллагааны газрын албан ёсны вэб сайт',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
