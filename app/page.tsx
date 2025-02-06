@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
@@ -11,18 +9,85 @@ import VideoGrid from "@/components/VideoGrid";
 import StatsGrid from "@/components/StatsGrid";
 import Feedback from "@/components/Feedback";
 import type { NewsItem } from "@/components/NewsGrid";
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export default async function Home() {
+  const supabase = createServerComponentClient({ cookies });
+
+  interface Category {
+    id: string;
+    name: string;
+    slug: string;
+  }
+
+  interface NewsItem {
+    id: string;
+    title: string;
+    slug: string;
+    excerpt: string | null;
+    featured_image: string;
+    published_at: string;
+    is_featured: boolean;
+    category_id: string | null;
+    category: Category | null;
+  }
+
+  // Fetch all news with error handling
+  let allNews: NewsItem[] = [];
+  try {
+    const { data, error } = await supabase
+      .from('news')
+      .select(`
+        *,
+        category:categories(*)
+      `)
+      .order('published_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching news:', error);
+      throw error;
+    }
+
+    allNews = data || [];
+  } catch (error) {
+    console.error('Error fetching news:', error);
+    // Continue with empty news array
+  }
+
+  // Transform the data to match the component interface
+  const transformedNews = allNews.map(news => ({
+    id: news.id,
+    title: news.title,
+    slug: news.slug,
+    excerpt: news.excerpt,
+    featured_image: news.featured_image,
+    published_at: news.published_at,
+    is_featured: news.is_featured,
+    category: news.category || {
+      id: '',
+      name: 'Ерөнхий',
+      slug: 'general'
+    }
+  }));
+
+  // Split news into featured and regular
+  const featuredNews = transformedNews.filter(news => news.is_featured);
+  const regularNews = transformedNews.filter(news => !news.is_featured);
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Top Bar */}
       <div className="bg-[#003277]">
-        <div className="max-w-[1230px] mx-auto flex justify-end items-center px-4 py-1">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="text-[12px] text-white hover:text-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1">
+          <div className="flex flex-col sm:flex-row items-center justify-between space-y-1 sm:space-y-0">
+            <Link href="/" className="text-xs sm:text-sm text-white hover:text-gray-200 text-center sm:text-left">
               Худалдан авах ажиллагааны цахим систем tender.gov.mn
             </Link>
-            <span className="text-[12px] text-white">
+            <span className="text-xs sm:text-sm text-white">
               Сүүлд зарлагдсан Тендерийн урилга
             </span>
           </div>
@@ -31,26 +96,26 @@ export default function Home() {
 
       {/* Header */}
       <header className="bg-[#003277] text-white">
-        <div className="max-w-[1230px] mx-auto py-2 px-4">
-          <div className="flex">
-            <Link href="/" className="flex items-center">
-              <div className="flex items-center gap-3">
-                <Image 
-                  src="https://du.spa.gov.mn/include/image/title.jpg"
-                  alt="Өмнөговь аймгийн Худалдан авах ажиллагааны газар"
-                  width={55}
-                  height={55}
-                  className="flex-shrink-0"
-                />
-                <div className="flex flex-col">
-                  <h2 className="text-[13px] leading-tight tracking-wide opacity-90">ӨМНӨГОВЬ АЙМАГ</h2>
-                  <h1 className="text-[19px] font-medium leading-tight flex">
-                    <span className="flex flex-col">
-                      <span>ХУДАЛДАН АВАХ</span>
-                      <span>АЖИЛЛАГААНЫ ГАЗАР</span>
-                    </span>
-                  </h1>
-                </div>
+        <div className="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center sm:justify-start">
+            <Link href="/" className="flex items-center space-x-2 sm:space-x-4">
+              <Image 
+                src="https://du.spa.gov.mn/include/image/title.jpg"
+                alt="Өмнөговь аймгийн Худалдан авах ажиллагааны газар"
+                width={55}
+                height={55}
+                className="w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0"
+              />
+              <div className="flex flex-col">
+                <h2 className="text-[11px] sm:text-[13px] leading-tight tracking-wide opacity-90">
+                  ӨМНӨГОВЬ АЙМАГ
+                </h2>
+                <h1 className="text-[16px] sm:text-[19px] font-medium leading-tight">
+                  <span className="flex flex-col">
+                    <span>ХУДАЛДАН АВАХ</span>
+                    <span>АЖИЛЛАГААНЫ ГАЗАР</span>
+                  </span>
+                </h1>
               </div>
             </Link>
           </div>
@@ -58,284 +123,216 @@ export default function Home() {
       </header>
 
       {/* Navigation */}
-      <nav className="bg-[#003277] text-white border-t border-opacity-10 border-white sticky top-0 z-50">
-        <div className="max-w-[1100px] mx-auto px-4">
-          <div className="flex justify-between">
-            <Link href="/нүүр" className="py-4 px-2 text-[12px] hover:bg-gray-600 text-center flex flex-col justify-center">
-              <span>НҮҮР</span>
-              <span>ХУУДАС</span>
-            </Link>
-            <Link href="/байгууллагын-танилцуулга" className="py-4 px-2 text-[12px] hover:bg-gray-600 text-center flex flex-col justify-center">
-              <span>БАЙГУУЛЛАГЫН</span>
-              <span>ТАНИЛЦУУЛГА</span>
-            </Link>
-            <Link href="/цаг-үеийн-мэдээ" className="py-4 px-2 text-[12px] hover:bg-gray-600 text-center flex flex-col justify-center">
-              <span>ЦАГ ҮЕИЙН</span>
-              <span>МЭДЭЭ</span>
-            </Link>
-            <Link href="/ил-тод-байдал" className="py-4 px-2 text-[12px] hover:bg-gray-600 text-center flex flex-col justify-center">
-              <span>ИЛ ТОД</span>
-              <span>БАЙДАЛ</span>
-            </Link>
-            <Link href="/төлөвлөгөө" className="py-4 px-2 text-[12px] hover:bg-gray-600 text-center flex flex-col justify-center">
-              <span>ТӨЛӨВЛӨГӨӨ</span>
-              <span>ТАЙЛАН</span>
-            </Link>
-            <Link href="/шилэн" className="py-4 px-2 text-[12px] hover:bg-gray-600 text-center flex flex-col justify-center">
-              <span>ШИЛЭН</span>
-              <span>ТООЦОО</span>
-            </Link>
-            <Link href="/хууль" className="py-4 px-2 text-[12px] hover:bg-gray-600 text-center flex flex-col justify-center">
-              <span>ХУУЛЬ</span>
-              <span>ЭРХ ЗҮЙ</span>
-            </Link>
-            <Link href="/худалдан-авах-ажиллагаа" className="py-4 px-2 text-[12px] hover:bg-gray-600 text-center flex flex-col justify-center">
-              <span>ХУДАЛДАН АВАХ</span>
-              <span>АЖИЛЛАГАА</span>
-            </Link>
-            <Link href="/холбоо-барих" className="py-4 px-2 text-[12px] hover:bg-gray-600 text-center flex flex-col justify-center">
-              <span>ХОЛБОО</span>
-              <span>БАРИХ</span>
-            </Link>
+      <nav className="bg-[#003277] border-t border-white/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-white py-2">
+            {['Нүүр', 'Мэдээ', 'Тендер', 'Тайлан', 'Холбоо барих'].map((item) => (
+              <Link 
+                key={item}
+                href={`/${item === 'Нүүр' ? '' : item.toLowerCase()}`} 
+                className="text-xs sm:text-sm py-1 hover:text-gray-200 whitespace-nowrap"
+              >
+                {item}
+              </Link>
+            ))}
           </div>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="flex-1 bg-gray-50">
-        <div className="max-w-[1230px] mx-auto px-4 py-8">
-          {/* Featured News Section */}
-          <FeaturedNews news={[
-            {
-              date: "2024-01-15",
-              title: "ӨМНӨГОВЬ АЙМГИЙН ХУДАЛДАН АВАХ АЖИЛЛАГААНЫ ГАЗРЫН 2024 ОНЫ ТӨЛӨВЛӨГӨӨ",
-              imageUrl: "https://placehold.co/800x400/003277/white?text=Featured+News+1",
-              link: "/news/1"
-            },
-            {
-              date: "2024-01-13",
-              title: "ТЕНДЕРИЙН УРИЛГА ЗАРЛАЛАА",
-              imageUrl: "https://placehold.co/400x300/003277/white?text=Featured+News+2",
-              link: "/news/2"
-            },
-            {
-              date: "2024-01-12",
-              title: "СУРГАЛТ ЗОХИОН БАЙГУУЛЛАА",
-              imageUrl: "https://placehold.co/400x300/003277/white?text=Featured+News+3",
-              link: "/news/3"
-            }
-          ]} />
+      <main className="flex-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          {/* Featured News */}
+          {featuredNews.length > 0 && (
+            <section className="mb-8 sm:mb-12">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Онцлох мэдээ</h2>
+              <FeaturedNews news={featuredNews} />
+            </section>
+          )}
 
-          {/* News Grid */}
-          <div className="mt-8">
-            <NewsGrid news={[
+          {/* Latest News */}
+          {regularNews.length > 0 && (
+            <section className="mb-8 sm:mb-12">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-0">Сүүлийн мэдээ</h2>
+                <Link href="/news">
+                  <Button variant="outline" className="text-sm">
+                    Бүх мэдээ
+                  </Button>
+                </Link>
+              </div>
+              <NewsGrid news={regularNews} />
+            </section>
+          )}
+
+          {/* Icon Links */}
+          <section className="mb-8 sm:mb-12">
+            <IconLinks links={[
               {
-                date: "2024-01-09",
-                title: "ТЕНДЕР ШАЛГАРУУЛАЛТЫН ЖУРАМ",
-                imageUrl: "https://placehold.co/400x300/003277/white?text=News+1",
-                link: "/news/4"
+                icon: "file",
+                title: "Худалдан авах ажиллагааны төлөвлөгөө",
+                href: "/planning"
               },
               {
-                date: "2024-01-08",
-                title: "ЦАХИМ СИСТЕМИЙН ШИНЭЧЛЭЛ",
-                imageUrl: "https://placehold.co/400x300/003277/white?text=News+2",
-                link: "/news/5"
+                icon: "tender",
+                title: "Худалдан авах ажиллагааны төлөвлөгөөний гүйцэтгэл",
+                href: "/performance"
               },
               {
-                date: "2024-01-07",
-                title: "АЖЛЫН БАЙРНЫ ЗАРЛАЛ",
-                imageUrl: "https://placehold.co/400x300/003277/white?text=News+3",
-                link: "/news/6"
+                icon: "announcement",
+                title: "Тендер шалгаруулалтын урилга",
+                href: "/tenders"
+              },
+              {
+                icon: "report",
+                title: "Худалдан авах ажиллагааны тайлан",
+                href: "/reports"
+              },
+              {
+                icon: "file",
+                title: "Тендер шалгаруулалтын зарлал",
+                href: "/announcements"
+              },
+              {
+                icon: "user",
+                title: "Худалдан авах ажиллагаа, мэргэжил арга зүй",
+                href: "/methodology"
+              },
+              {
+                icon: "stats",
+                title: "Худалдан авах ажиллагааны тайлан",
+                href: "/stats"
+              },
+              {
+                icon: "search",
+                title: "Эрэлт хайгуулын ажлуудын жагсаалт",
+                href: "/search"
               }
             ]} />
-          </div>
+          </section>
+
+          {/* Videos */}
+          <section className="mb-8 sm:mb-12">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Видео сан</h2>
+            <VideoGrid 
+              title="ХУДАЛДАН АВАХ АЖИЛЛАГААНЫ ЦАХИМ СИСТЕМИЙН ГАРЫН АВЛАГА"
+              videos={[
+                {
+                  title: "ЦАХИМ ДЭЛГҮҮР АШИГЛАХ ГАРЫН АВЛАГА",
+                  thumbnailUrl: "https://placehold.co/400x300/003277/white?text=Video+1",
+                  videoUrl: "/video/1",
+                  date: "2024-01-15"
+                },
+                {
+                  title: "ГЭРЭЭНИЙ МЭДЭЭЛЭЛ БҮРТГЭХ ГАРЫН АВЛАГА",
+                  thumbnailUrl: "https://placehold.co/400x300/003277/white?text=Video+2",
+                  videoUrl: "/video/2",
+                  date: "2024-01-14"
+                },
+                {
+                  title: "ТЕНДЕР ХУДАЛДАН АВАХ АЖИЛЛАГААНЫ ЦАХИМ СИСТЕМИЙН ТАНИЛЦУУЛГА",
+                  thumbnailUrl: "https://placehold.co/400x300/003277/white?text=Video+3",
+                  videoUrl: "/video/3",
+                  date: "2024-01-13"
+                }
+              ]}
+            />
+          </section>
+
+          {/* Stats */}
+          <section className="mb-8 sm:mb-12">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Тоон үзүүлэлт</h2>
+            <StatsGrid
+              title="СҮҮЛИЙН ТӨЛӨВЛӨГӨӨНИЙ ГҮЙЦЭТГЭЛ"
+              stats={[
+                {
+                  title: "Төлөвлөгөөний тоо",
+                  value: "77.7%",
+                  color: "#00800014"
+                },
+                {
+                  title: "Гүйцэтгэлийн тоо",
+                  value: "82.9%",
+                  color: "#00800014"
+                },
+                {
+                  title: "Сүүлийн төлөвлөгөөний дүн",
+                  value: "206",
+                  color: "#00800014"
+                },
+                {
+                  title: "Гүйцэтгэлийн дүн",
+                  value: "189",
+                  color: "#00800014"
+                }
+              ]}
+            />
+          </section>
+
+          {/* Feedback */}
+          <section>
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Санал хүсэлт</h2>
+            <Feedback
+              title="САНАЛ АСУУЛГА"
+              middleText="Манай байгууллагад ирсэн санал, гомдол, хүсэлт, хандсан асуудлын хүрээнд шаардлагатай хариу мэдээлдэг байдал"
+              subtitle="Өмнөговь аймгийн Худалдан авах ажиллагааны газрын үйлчилгээний чанар, ил тод, шуурхай байдал, үйлчилгээний хүртээмжийн бодит байдлыг үнэлүүлж, түүнд дүн шинжилгээ хийн цаашид өөрчлөх, сайжруулах, хэрэгжүүлэх, зохион байгуулах үйл ажиллагааг тодорхойлоход оршино.."
+              items={[
+                {
+                  label: "1-2 хоногт хариу мэдэгддэг",
+                  percentage: 100,
+                },
+                {
+                  label: "3-7 хоногт хариу мэдэгддэг",
+                  percentage: 0,
+                },
+                {
+                  label: "7-14 хоногт хариу мэдэгддэг",
+                  percentage: 0,
+                },
+                {
+                  label: "14-с дээш хугацаанд хариу мэдэгддэг",
+                  percentage: 0,
+                },
+              ]}
+            />
+          </section>
         </div>
-
-        {/* Icon Links Section */}
-        <IconLinks links={[
-          {
-            icon: "file",
-            title: "Худалдан авах ажиллагааны төлөвлөгөө",
-            href: "/planning"
-          },
-          {
-            icon: "tender",
-            title: "Худалдан авах ажиллагааны төлөвлөгөөний гүйцэтгэл",
-            href: "/performance"
-          },
-          {
-            icon: "announcement",
-            title: "Тендер шалгаруулалтын урилга",
-            href: "/tenders"
-          },
-          {
-            icon: "report",
-            title: "Худалдан авах ажиллагааны тайлан",
-            href: "/reports"
-          },
-          {
-            icon: "file",
-            title: "Тендер шалгаруулалтын зарлал",
-            href: "/announcements"
-          },
-          {
-            icon: "user",
-            title: "Худалдан авах ажиллагаа, мэргэжил арга зүй",
-            href: "/methodology"
-          },
-          {
-            icon: "stats",
-            title: "Худалдан авах ажиллагааны тайлан",
-            href: "/stats"
-          },
-          {
-            icon: "search",
-            title: "Эрэлт хайгуулын ажлуудын жагсаалт",
-            href: "/search"
-          }
-        ]} />
-
-        {/* Video Grid Section */}
-        <VideoGrid 
-          title="ХУДАЛДАН АВАХ АЖИЛЛАГААНЫ ЦАХИМ СИСТЕМИЙН ГАРЫН АВЛАГА"
-          videos={[
-            {
-              title: "ЦАХИМ ДЭЛГҮҮР АШИГЛАХ ГАРЫН АВЛАГА",
-              thumbnailUrl: "https://placehold.co/400x300/003277/white?text=Video+1",
-              videoUrl: "/video/1",
-              date: "2024-01-15"
-            },
-            {
-              title: "ГЭРЭЭНИЙ МЭДЭЭЛЭЛ БҮРТГЭХ ГАРЫН АВЛАГА",
-              thumbnailUrl: "https://placehold.co/400x300/003277/white?text=Video+2",
-              videoUrl: "/video/2",
-              date: "2024-01-14"
-            },
-            {
-              title: "ТЕНДЕР ХУДАЛДАН АВАХ АЖИЛЛАГААНЫ ЦАХИМ СИСТЕМИЙН ТАНИЛЦУУЛГА",
-              thumbnailUrl: "https://placehold.co/400x300/003277/white?text=Video+3",
-              videoUrl: "/video/3",
-              date: "2024-01-13"
-            }
-          ]}
-        />
-
-        {/* Stats Grid Section */}
-        <StatsGrid
-          title="СҮҮЛИЙН ТӨЛӨВЛӨГӨӨНИЙ ГҮЙЦЭТГЭЛ"
-          stats={[
-            {
-              title: "Төлөвлөгөөний тоо",
-              value: "77.7%",
-              color: "#00800014"
-            },
-            {
-              title: "Гүйцэтгэлийн тоо",
-              value: "82.9%",
-              color: "#00800014"
-            },
-            {
-              title: "Сүүлийн төлөвлөгөөний дүн",
-              value: "206",
-              color: "#00800014"
-            },
-            {
-              title: "Гүйцэтгэлийн дүн",
-              value: "189",
-              color: "#00800014"
-            }
-          ]}
-        />
-
-        {/* Feedback Section */}
-        <Feedback
-          title="САНАЛ АСУУЛГА"
-          middleText="Манай байгууллагад ирсэн санал, гомдол, хүсэлт, хандсан асуудлын хүрээнд шаардлагатай хариу мэдээлдэг байдал"
-          subtitle="Өмнөговь аймгийн Худалдан авах ажиллагааны газрын үйлчилгээний чанар, ил тод, шуурхай байдал, үйлчилгээний хүртээмжийн бодит байдлыг үнэлүүлж, түүнд дүн шинжилгээ хийн цаашид өөрчлөх, сайжруулах, хэрэгжүүлэх, зохион байгуулах үйл ажиллагааг тодорхойлоход оршино.."
-          items={[
-            {
-              label: "1-2 хоногт хариу мэдэгддэг",
-              percentage: 100,
-            },
-            {
-              label: "3-7 хоногт хариу мэдэгддэг",
-              percentage: 0,
-            },
-            {
-              label: "7-14 хоногт хариу мэдэгддэг",
-              percentage: 0,
-            },
-            {
-              label: "14-с дээш хугацаанд хариу мэдэгддэг",
-              percentage: 0,
-            },
-          ]}
-        />
       </main>
 
       {/* Footer */}
-      <footer className="bg-[#003277] text-white py-12">
-        <div className="max-w-[1230px] mx-auto px-4">
-          <div className="grid grid-cols-3 gap-8">
-            {/* Contact Info */}
+      <footer className="bg-[#003277] text-white py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             <div>
-              <h3 className="font-bold mb-4">ХОЛБОГДОХ</h3>
-              <div className="space-y-2 text-sm">
-                <p>Өмнөговь аймаг</p>
-                <p>Утас:</p>
-                <p>Факс: </p>
-                <p>И-мэйл:</p>
+              <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">Холбоо барих</h3>
+              <div className="space-y-2 text-xs sm:text-sm">
+                <p>Өмнөговь аймаг, Даланзадгад сум</p>
+                <p>Худалдан авах ажиллагааны газар</p>
+                <p>Утас: +976 7053-3333</p>
+                <p>Факс: +976 7053-3333</p>
+                <p>Имэйл: info@omnogovi.gov.mn</p>
               </div>
             </div>
-
-            {/* Links */}
             <div>
-              <h3 className="font-bold mb-4">БҮХ ХОЛБООС</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/" className="hover:underline">Монгол улсын Сангийн яам</Link>
-                </li>
-                <li>
-                  <Link href="/" className="hover:underline">Төрийн худалдан авах ажиллагааны газар</Link>
-                </li>
-                <li>
-                  <Link href="/" className="hover:underline">Төрийн худалдан авах ажиллагааны цахим систем</Link>
-                </li>
-                <li>
-                  <Link href="/" className="hover:underline">Өмнөговь аймгийн Засаг даргын Тамгын газар</Link>
-                </li>
-              </ul>
+              <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">Холбоосууд</h3>
+              <div className="space-y-2 text-xs sm:text-sm">
+                <p><Link href="/" className="hover:underline">Тендерийн урилга</Link></p>
+                <p><Link href="/" className="hover:underline">Үнэлгээний хорооны бүрэлдэхүүн</Link></p>
+                <p><Link href="/" className="hover:underline">Худалдан авах ажиллагааны төлөвлөгөө</Link></p>
+                <p><Link href="/" className="hover:underline">Тайлан, мэдээ</Link></p>
+              </div>
             </div>
-
-            {/* Statistics */}
             <div>
-              <h3 className="font-bold mb-4">ХАНДАЛТ</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Өнөөдөр</span>
-                  <span>35</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Өчигдөр</span>
-                  <span>71</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Сүүлийн 7 хоног</span>
-                  <span>648</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Сүүлийн сар</span>
-                  <span>2465</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Нийт</span>
-                  <span>20203</span>
-                </div>
+              <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">Бусад</h3>
+              <div className="space-y-2 text-xs sm:text-sm">
+                <p><Link href="/" className="hover:underline">Нүүр</Link></p>
+                <p><Link href="/" className="hover:underline">Мэдээ, мэдээлэл</Link></p>
+                <p><Link href="/" className="hover:underline">Холбоо барих</Link></p>
+                <p><Link href="/" className="hover:underline">Тусламж</Link></p>
               </div>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-white text-center text-sm">
-            <p>2025, Өмнөговь аймаг Худалдан авах ажиллагааны газар</p>
+          <div className="mt-6 pt-6 border-t border-white/20 text-center text-xs sm:text-sm">
+            <p> 2025, Өмнөговь аймгийн Худалдан авах ажиллагааны газар. Бүх эрх хуулиар хамгаалагдсан.</p>
           </div>
         </div>
       </footer>

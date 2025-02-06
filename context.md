@@ -65,6 +65,39 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 ```
 
+## Admin Panel Requirements
+
+### Authentication
+- Role-based access control (Admin/Editor/Viewer)
+- Supabase authentication integration
+- Session management
+
+### Content Management
+1. **Posts/News Management**
+   - CRUD operations for procurement announcements
+   - Rich text editor support
+   - File attachment handling
+
+2. **User Management**
+   - Manage user roles/permissions
+   - Activity monitoring
+
+3. **File Management**
+   - Upload/download tracking
+   - Version control
+   - Supabase storage integration
+
+### UI Requirements
+- Dashboard with analytics
+- Data tables with sorting/filtering
+- Audit logs
+- Responsive design
+
+### Security
+- Row Level Security enforcement
+- Activity logging
+- Two-factor authentication option
+
 ## Development Guidelines
 
 ### Code Style
@@ -122,3 +155,7 @@ The application is deployed using Vercel's platform, which provides:
 
 ## Support
 For any technical issues or questions, please contact the development team.
+
+
+NEXT_PUBLIC_SUPABASE_URL=https://vtyqbodhgnnpwwzqnxta.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0eXFib2RoZ25ucHd3enFueHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg1MTc5NjUsImV4cCI6MjA1NDA5Mzk2NX0.hE6hc1l5GhegWCpU5xTD59uHk4LWEvNLxyyxRqp9vTc

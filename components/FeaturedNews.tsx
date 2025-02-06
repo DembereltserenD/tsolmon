@@ -1,13 +1,20 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
+import { Card } from "@/components/ui/card";
 
 export interface FeaturedNewsItem {
-  date: string;
+  id: string;
   title: string;
-  imageUrl: string;
-  link?: string;
+  slug: string;
+  excerpt: string | null;
+  featured_image: string;
+  published_at: string;
+  category: {
+    name: string;
+    slug: string;
+  };
 }
 
 interface FeaturedNewsProps {
@@ -15,48 +22,73 @@ interface FeaturedNewsProps {
 }
 
 export default function FeaturedNews({ news }: FeaturedNewsProps) {
-  if (news.length < 3) return null;
+  if (!news.length) return null;
 
-  const [mainNews, ...sideNews] = news;
+  const mainNews = news[0];
+  const sideNews = news.slice(1, 3);
 
   return (
-    <div className="flex flex-col md:flex-row gap-2 mb-8">
-      {/* Main featured item - 2/3 width */}
-      <div className="md:w-2/3">
-        <Link href={mainNews.link || "#"} className="block h-full">
-          <div className="relative h-[calc(27rem+1.5rem)]">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      {/* Main featured news */}
+      <Card className="lg:col-span-2 overflow-hidden group">
+        <Link href={`/news/${mainNews.slug}`} className="block">
+          <div className="relative aspect-[16/9] w-full">
             <Image
-              src={mainNews.imageUrl}
+              src={mainNews.featured_image}
               alt={mainNews.title}
               fill
-              className="object-cover rounded-lg"
-              priority
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
-            <div className="absolute bottom-0 left-0 right-0 p-4 text-white bg-black/60">
-              <p className="text-sm mb-1">{mainNews.date}</p>
-              <h3 className="text-xl font-bold">{mainNews.title}</h3>
+          </div>
+          <div className="p-4 sm:p-6">
+            <div className="flex flex-wrap gap-2 mb-2">
+              <span className="inline-block bg-[#003277] text-white text-xs px-2 py-1 rounded">
+                {mainNews.category.name}
+              </span>
+              <span className="text-gray-500 text-xs py-1">
+                {new Date(mainNews.published_at).toLocaleDateString('mn-MN')}
+              </span>
             </div>
+            <h3 className="text-lg sm:text-xl font-semibold mb-2 line-clamp-2 group-hover:text-[#003277]">
+              {mainNews.title}
+            </h3>
+            {mainNews.excerpt && (
+              <p className="text-gray-600 text-sm sm:text-base line-clamp-2 sm:line-clamp-3">
+                {mainNews.excerpt}
+              </p>
+            )}
           </div>
         </Link>
-      </div>
+      </Card>
 
-      {/* Side items - 1/3 width with spacing */}
-      <div className="md:w-1/3 flex flex-col gap-2">
-        {sideNews.slice(0, 2).map((item, index) => (
-          <Link key={index} href={item.link || "#"} className="block">
-            <div className="relative h-[14rem]">
-              <Image
-                src={item.imageUrl}
-                alt={item.title}
-                fill
-                className="object-cover rounded-lg"
-              />
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white bg-black/60">
-                <p className="text-sm mb-1">{item.date}</p>
-                <h3 className="text-lg font-bold">{item.title}</h3>
+      {/* Side news */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 sm:gap-6">
+        {sideNews.map((item) => (
+          <Card key={item.id} className="overflow-hidden group">
+            <Link href={`/news/${item.slug}`} className="block">
+              <div className="relative aspect-[16/9] w-full">
+                <Image
+                  src={item.featured_image}
+                  alt={item.title}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                />
               </div>
-            </div>
-          </Link>
+              <div className="p-3 sm:p-4">
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className="inline-block bg-[#003277] text-white text-xs px-2 py-1 rounded">
+                    {item.category.name}
+                  </span>
+                  <span className="text-gray-500 text-xs py-1">
+                    {new Date(item.published_at).toLocaleDateString('mn-MN')}
+                  </span>
+                </div>
+                <h3 className="text-sm sm:text-base font-semibold line-clamp-2 group-hover:text-[#003277]">
+                  {item.title}
+                </h3>
+              </div>
+            </Link>
+          </Card>
         ))}
       </div>
     </div>

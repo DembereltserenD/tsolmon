@@ -36,17 +36,19 @@ export default function IconLinks({ links }: IconLinksProps) {
     <div className="bg-[#003277] py-8">
       <div className="max-w-[1230px] mx-auto px-4">
         <h2 className="text-white text-xl mb-6 uppercase">Худалдан авах ажиллагаа</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {links.map((link, index) => {
             const Icon = IconComponent[link.icon];
             return (
-              <Link 
-                key={index} 
+              <Link
+                key={index}
                 href={link.href}
-                className="flex items-start gap-3 p-4 text-white hover:bg-blue-800 rounded-lg transition-colors"
+                className="flex flex-col items-center p-4 sm:p-6 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow text-center group"
               >
-                <Icon className="w-6 h-6 mt-1 flex-shrink-0" />
-                <span className="text-sm leading-tight">{link.title}</span>
+                <Icon className="w-8 h-8 sm:w-10 sm:h-10 text-[#003277] mb-3 group-hover:scale-110 transition-transform" />
+                <span className="text-xs sm:text-sm font-medium text-gray-700 line-clamp-2">
+                  {link.title}
+                </span>
               </Link>
             );
           })}

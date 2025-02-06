@@ -1,12 +1,14 @@
-import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import './globals.css';
+import { Toaster } from 'sonner';
+import SupabaseProvider from './supabase-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Өмнөговь аймаг - Худалдан авах ажиллагааны газар',
-  description: 'Өмнөговь аймгийн Худалдан авах ажиллагааны газрын албан ёсны вэб сайт',
+  title: 'Admin Dashboard',
+  description: 'Admin dashboard for managing content',
   icons: {
     icon: '/favicon.ico',
   },
@@ -18,9 +20,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="mn" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
-        {children}
+    <html lang="en" className="h-full bg-gray-50">
+      <body className={`${inter.className} h-full`}>
+        <SupabaseProvider>
+          {children}
+          <Toaster position="top-right" />
+        </SupabaseProvider>
       </body>
     </html>
   );
