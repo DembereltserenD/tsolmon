@@ -101,14 +101,14 @@ export default async function Home() {
             <Link href="/" className="flex items-center space-x-2 sm:space-x-4">
               <Image 
                 src="https://du.spa.gov.mn/include/image/title.jpg"
-                alt="Өмнөговь аймгийн Худалдан авах ажиллагааны газар"
+                alt="Өвөрхангай аймгийн Худалдан авах ажиллагааны газар"
                 width={55}
                 height={55}
                 className="w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0"
               />
               <div className="flex flex-col">
                 <h2 className="text-[11px] sm:text-[13px] leading-tight tracking-wide opacity-90">
-                  ӨМНӨГОВЬ АЙМАГ
+                  ӨВӨРХАНГАЙ АЙМАГ
                 </h2>
                 <h1 className="text-[16px] sm:text-[19px] font-medium leading-tight">
                   <span className="flex flex-col">
@@ -274,7 +274,7 @@ export default async function Home() {
             <Feedback
               title="САНАЛ АСУУЛГА"
               middleText="Манай байгууллагад ирсэн санал, гомдол, хүсэлт, хандсан асуудлын хүрээнд шаардлагатай хариу мэдээлдэг байдал"
-              subtitle="Өмнөговь аймгийн Худалдан авах ажиллагааны газрын үйлчилгээний чанар, ил тод, шуурхай байдал, үйлчилгээний хүртээмжийн бодит байдлыг үнэлүүлж, түүнд дүн шинжилгээ хийн цаашид өөрчлөх, сайжруулах, хэрэгжүүлэх, зохион байгуулах үйл ажиллагааг тодорхойлоход оршино.."
+              subtitle="Өвөрхангай аймгийн Худалдан авах ажиллагааны газрын үйлчилгээний чанар, ил тод, шуурхай байдал, үйлчилгээний хүртээмжийн бодит байдлыг үнэлүүлж, түүнд дүн шинжилгээ хийн цаашид өөрчлөх, сайжруулах, хэрэгжүүлэх, зохион байгуулах үйл ажиллагааг тодорхойлоход оршино.."
               items={[
                 {
                   label: "1-2 хоногт хариу мэдэгддэг",
@@ -305,7 +305,7 @@ export default async function Home() {
             <div>
               <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">Холбоо барих</h3>
               <div className="space-y-2 text-xs sm:text-sm">
-                <p>Өмнөговь аймаг, Даланзадгад сум</p>
+                <p>Өвөрхангай аймаг, Даланзадгад сум</p>
                 <p>Худалдан авах ажиллагааны газар</p>
                 <p>Утас: +976 7053-3333</p>
                 <p>Факс: +976 7053-3333</p>
@@ -332,7 +332,7 @@ export default async function Home() {
             </div>
           </div>
           <div className="mt-6 pt-6 border-t border-white/20 text-center text-xs sm:text-sm">
-            <p> 2025, Өмнөговь аймгийн Худалдан авах ажиллагааны газар. Бүх эрх хуулиар хамгаалагдсан.</p>
+            <p> 2025, Өвөрхангай аймгийн Худалдан авах ажиллагааны газар. Бүх эрх хуулиар хамгаалагдсан.</p>
           </div>
         </div>
       </footer>
